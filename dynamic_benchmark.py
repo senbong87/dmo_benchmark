@@ -21,6 +21,7 @@ LOWER_BOUND = [ 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 UPPER_BOUND = [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  
          1,  1,  1,  1,  1 ]
 ERR_MSG = "x is outside decision boundary or dimension of x is not correct"
+DELTA_STATE = 1
 
 ## Define component functions ##
 def beta_uni(x, t, g):
@@ -50,7 +51,7 @@ def beta_mix(x, t, g):
     beta function. Input are the decision variable (x), time (t) and g function
     (g).
     """
-    k = int(np.abs(5.0*np.mod(np.floor(t/5.0), 2.0) - np.mod(t, 5.0)))
+    k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
     x_odd = [1.0 + (e - g(x, t))*(e - g(x, t)) -
             np.cos(2*np.pi*k*(e - g(x, t)))
             for i, e in enumerate(x[1:]) if i%2 == 0]
@@ -75,14 +76,16 @@ def alpha_mix(x, t):
     """This function is used to calculate the alpha function with mixed 
     continuous POF and discrete POF.
     """
-    k = int(np.abs(5.0*np.mod(np.floor(t/5.0), 2.0) - np.mod(t, 5.0)))
+    k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
+    #print("t:{}, k:{}".format(t, k))
     return [x[0], 1 - np.sqrt(x[0]) + 0.1*k*(1 + np.sin(10*np.pi*x[0]))]
 
 def alpha_conf(x, t):
     """This function is used to calculate the alpha function with time-varying
     conflicting objective. Input are decision variable (x) and time (t).
     """
-    k = int(np.abs(5.0*np.mod(np.floor(t/5.0), 2.0) - np.mod(t, 5.0)))
+    k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
+    #print("t:{}, k:{}".format(t, k))
     return [x[0], 1 - np.power(x[0], \
             np.log(1 - 0.1*k)/np.log(0.1*k + np.finfo(float).eps))]
 

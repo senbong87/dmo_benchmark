@@ -23,6 +23,7 @@ const double LOWER_ARRAY[] = { 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 const double UPPER_ARRAY[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 1, 1, 1, 1 };
+const int DELTA_STATE = 1;
 const vector<double> LOWER_BOUND(LOWER_ARRAY, LOWER_ARRAY+21);
 const vector<double> UPPER_BOUND(UPPER_ARRAY, UPPER_ARRAY+21);
 
@@ -89,7 +90,7 @@ vector<double> beta_multi(const vector<double> &x, double t,
 vector<double> beta_mix(const vector<double> &x, double t,
         double (*g)(const vector<double> &, double))
 {
-    int k = int(fabs(5*fmod(floor(t/5.0), 2.0) - fmod(t, 5)));
+    int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
     double temp;
     vector<double> beta(2, 0.0);
     for (size_t i = 1; i < x.size(); ++i) {
@@ -137,7 +138,7 @@ vector<double> alpha_disc(const vector<double> &x)
  */
 vector<double> alpha_mix(const vector<double> &x, double t)
 {
-    int k = int(fabs(5*fmod(floor(t/5.0), 2.0) - fmod(t, 5)));
+    int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
     vector<double> f;
     f.push_back(x[0]);
     f.push_back(1.0 - sqrt(x[0]) + 0.1*k*(1 + sin(10*PI*x[0])));
@@ -151,7 +152,7 @@ vector<double> alpha_mix(const vector<double> &x, double t)
  */
 vector<double> alpha_conf(const vector<double> &x, double t)
 {
-    int k = int(fabs(5*fmod(floor(t/5.0), 2.0) - fmod(t, 5)));
+    int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
     double p = log(1-0.1*k)/log(0.1*k+std::numeric_limits<double>::epsilon());
     vector<double> f;
     f.push_back(x[0]);
