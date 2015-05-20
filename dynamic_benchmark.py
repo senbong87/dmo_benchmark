@@ -23,6 +23,7 @@ UPPER_BOUND = [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 ERR_MSG = "x is outside decision boundary or dimension of x is not correct"
 DELTA_STATE = 1
 
+
 ## Define component functions ##
 def beta_uni(x, t, g):
     """This function is used to calculate the unimodal beta function. Input are
@@ -33,6 +34,7 @@ def beta_uni(x, t, g):
     x_eve = [(e - g(x, t))*(e - g(x, t)) for i, e in enumerate(x[1:]) 
             if i%2 == 1]
     return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
+
 
 def beta_multi(x, t, g):
     """This function is used to calculate the multi-modal beta function. Input 
@@ -45,6 +47,7 @@ def beta_multi(x, t, g):
             (1 + np.abs(np.sin(4*np.pi*(e - g(x, t))))) 
             for i, e in enumerate(x[1:]) if i%2 == 1]
     return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
+
 
 def beta_mix(x, t, g):
     """This function is used to calculate the mixed unimodal and multi-modal 
@@ -60,17 +63,20 @@ def beta_mix(x, t, g):
             for i, e in enumerate(x[1:]) if i%2 == 1]
     return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
 
+
 def alpha_conv(x):
     """This function is used to calculate the alpha function with convex POF.
     Input is decision variable (x).
     """
     return [x[0], 1 - np.sqrt(x[0])]
 
+
 def alpha_disc(x):
     """This function is used to calculate the alpha function with discrete POF.
     Input is decision variable (x).
     """
     return [x[0], 1.5 - np.sqrt(x[0]) - 0.5*np.sin(10*np.pi*x[0])]
+
 
 def alpha_mix(x, t):
     """This function is used to calculate the alpha function with mixed 
@@ -79,6 +85,7 @@ def alpha_mix(x, t):
     k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
     #print("t:{}, k:{}".format(t, k))
     return [x[0], 1 - np.sqrt(x[0]) + 0.1*k*(1 + np.sin(10*np.pi*x[0]))]
+
 
 def alpha_conf(x, t):
     """This function is used to calculate the alpha function with time-varying
@@ -89,11 +96,13 @@ def alpha_conf(x, t):
     return [x[0], 1 - np.power(x[0], \
             np.log(1 - 0.1*k)/np.log(0.1*k + np.finfo(float).eps))]
 
+
 def g(x, t):
     """This function is used to calculate the g function used in the paper.
     Input are decision variable (x) and time (t). 
     """
     return np.sin(0.5*np.pi*(t-x[0]))
+
 
 ## Utility functions ##
 def check_boundary(x, upper_bound=UPPER_BOUND, lower_bound=LOWER_BOUND):
@@ -109,15 +118,18 @@ def check_boundary(x, upper_bound=UPPER_BOUND, lower_bound=LOWER_BOUND):
         output = output and (e >= low) and (e <= upp)
     return output
 
+
 def additive(alpha, beta):
     """Additive form of the benchmark problem.
     """
     return [alpha[0] + beta[0], alpha[1] + beta[1]]
 
+
 def multiplicative(alpha, beta):
     """Multiplicative form of the benchmark problem.
     """
     return [alpha[0]*(1 + beta[0]), alpha[1]*(1 + beta[1])]
+
 
 ## Benchmark functions ## 
 def DB1a(x, t):
@@ -130,6 +142,7 @@ def DB1a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB1m(x, t):
     """DB1m dynamic benchmark problem
     """
@@ -139,6 +152,7 @@ def DB1m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB2a(x, t):
     """DB2a dynamic benchmark problem
@@ -150,6 +164,7 @@ def DB2a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB2m(x, t):
     """DB2m dynamic benchmark problem
     """
@@ -159,6 +174,7 @@ def DB2m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB3a(x, t):
     """DB3a dynamic benchmark problem
@@ -170,6 +186,7 @@ def DB3a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB3m(x, t):
     """DB3m dynamic benchmark problem
     """
@@ -179,6 +196,7 @@ def DB3m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB4a(x, t):
     """DB4a dynamic benchmark problem
@@ -190,6 +208,7 @@ def DB4a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB4m(x, t):
     """DB4m dynamic benchmark problem
     """
@@ -199,6 +218,7 @@ def DB4m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB5a(x, t):
     """DB5a dynamic benchmark problem
@@ -210,6 +230,7 @@ def DB5a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB5m(x, t):
     """DB5m dynamic benchmark problem
     """
@@ -219,6 +240,7 @@ def DB5m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB6a(x, t):
     """DB6a dynamic benchmark problem
@@ -230,6 +252,7 @@ def DB6a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB6m(x, t):
     """DB6m dynamic benchmark problem
     """
@@ -239,6 +262,7 @@ def DB6m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB7a(x, t):
     """DB7a dynamic benchmark problem
@@ -250,6 +274,7 @@ def DB7a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB7m(x, t):
     """DB7m dynamic benchmark problem
     """
@@ -259,6 +284,7 @@ def DB7m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 def DB8a(x, t):
     """DB8a dynamic benchmark problem
@@ -270,6 +296,7 @@ def DB8a(x, t):
     else:
         raise Exception(ERR_MSG)
 
+
 def DB8m(x, t):
     """DB8m dynamic benchmark problem
     """
@@ -279,6 +306,7 @@ def DB8m(x, t):
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)
+
 
 if __name__ == '__main__':
     print(__doc__)
