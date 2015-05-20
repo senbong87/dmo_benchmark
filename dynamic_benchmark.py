@@ -16,10 +16,8 @@ algorithm.
 import numpy as np
 
 ## Parameter configuration ##
-LOWER_BOUND = [ 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-        -1, -1, -1, -1, -1 ]
-UPPER_BOUND = [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  
-         1,  1,  1,  1,  1 ]
+LOWER_BOUND = [0.0] + 20*[-1.0]
+UPPER_BOUND = 21*[1.0]
 ERR_MSG = "x is outside decision boundary or dimension of x is not correct"
 DELTA_STATE = 1
 
@@ -83,7 +81,6 @@ def alpha_mix(x, t):
     continuous POF and discrete POF.
     """
     k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
-    #print("t:{}, k:{}".format(t, k))
     return [x[0], 1 - np.sqrt(x[0]) + 0.1*k*(1 + np.sin(10*np.pi*x[0]))]
 
 
@@ -92,9 +89,20 @@ def alpha_conf(x, t):
     conflicting objective. Input are decision variable (x) and time (t).
     """
     k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
-    #print("t:{}, k:{}".format(t, k))
     return [x[0], 1 - np.power(x[0], \
             np.log(1 - 0.1*k)/np.log(0.1*k + np.finfo(float).eps))]
+
+
+def alpha_conf_3obj(x, t):
+    """This function is used to calculate the alpha unction with time-varying
+    conflicting objective (3-objective). Input are decision variable (x) and 
+    time (t).
+    """
+    k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
+    alpha1 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.cos(0.5*x[1]*np.pi))
+    alpha2 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.sin(0.5*x[1]*np.pi))
+    alpha3 = fix_numerical_instability(np.sin(0.5*x[0]*np.pi + 0.25*(k/5.0)*np.pi))
+    return [alpha1, alpha2, alpha3]
 
 
 def g(x, t):
@@ -117,6 +125,34 @@ def check_boundary(x, upper_bound=UPPER_BOUND, lower_bound=LOWER_BOUND):
     for e, upp, low in zip(x, upper_bound, lower_bound):
         output = output and (e >= low) and (e <= upp)
     return output
+
+
+def check_boundary_3obj(x, upper_bound=UPPER_BOUND, lower_bound=LOWER_BOUND):
+    """Check the dimension of x and whether it is in the decision boundary. x is
+    decision variable, upper_bound and lower_bound are upperbound and lowerbound
+    lists of the decision space
+    """
+    lower_bound = [0.0]+lower_bound
+    upper_bound = [1.0]+upper_bound
+    if len(x) != len(upper_bound) or len(x) != len(lower_bound):
+        return False
+
+    output = True
+    for e, upp, low in zip(x, upper_bound, lower_bound):
+        output = output and (e >= low) and (e <= upp)
+    return output
+
+
+def fix_numerical_instability(x):
+    """Check whether x is close to zero, sqrt(0.5) or not. If it is close to 
+    these two values, changes x to the value. Otherwise, return x.
+    """
+    if np.allclose(0.0, x):
+        return 0.0
+    
+    if np.allclose(np.sqrt(0.5), x):
+        return np.sqrt(0.5)
+    return x
 
 
 def additive(alpha, beta):
@@ -302,6 +338,28 @@ def DB8m(x, t):
     """
     if check_boundary(x, UPPER_BOUND, LOWER_BOUND):
         alpha = alpha_conf(x, t)
+        beta = beta_mix(x, t, g)
+        return multiplicative(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB9a(x, t):
+    """DB9a dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj(x, t)
+        beta = beta_mix(x, t, g)
+        return additive(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB9m(x, t):
+    """DB9m dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj(x, t)
         beta = beta_mix(x, t, g)
         return multiplicative(alpha, beta)
     else:
