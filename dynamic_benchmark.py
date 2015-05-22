@@ -23,43 +23,44 @@ DELTA_STATE = 1
 
 
 ## Define component functions ##
-def beta_uni(x, t, g):
+def beta_uni(x, t, g, obj_num=2):
     """This function is used to calculate the unimodal beta function. Input are
     the decision variable (x), time (t) and g function (g).
     """
-    x_odd = [(e - g(x, t))*(e - g(x, t)) for i, e in enumerate(x[1:]) 
-            if i%2 == 0]
-    x_eve = [(e - g(x, t))*(e - g(x, t)) for i, e in enumerate(x[1:]) 
-            if i%2 == 1]
-    return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
+    beta = [0.0]*obj_num
+    for i in range(obj_num-1, len(x)):
+        beta[(i+1)%obj_num] += (x[i] - g(x, t))*(x[i] - g(x, t))
+
+    beta = [(2.0/int(len(LOWER_BOUND)/obj_num))*b for b in beta]
+    return beta
 
 
-def beta_multi(x, t, g):
+def beta_multi(x, t, g, obj_num=2):
     """This function is used to calculate the multi-modal beta function. Input 
     are the decision variable (x), time (t) and g function (g).
     """
-    x_odd = [(e - g(x, t))*(e - g(x, t))*
-            (1 + np.abs(np.sin(4*np.pi*(e - g(x, t))))) 
-            for i, e in enumerate(x[1:]) if i%2 == 0]
-    x_eve = [(e - g(x, t))*(e - g(x, t))* 
-            (1 + np.abs(np.sin(4*np.pi*(e - g(x, t))))) 
-            for i, e in enumerate(x[1:]) if i%2 == 1]
-    return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
+    beta = [0.0]*obj_num
+    for i in range(obj_num-1, len(x)):
+        beta[(i+1)%obj_num] += (x[i] - g(x, t))*(x[i] - g(x, t))*\
+                (1 + np.abs(np.sin(4*np.pi*(x[i] - g(x, t)))))
+
+    beta = [(2.0/int(len(LOWER_BOUND)/obj_num))*b for b in beta]
+    return beta
 
 
-def beta_mix(x, t, g):
+def beta_mix(x, t, g, obj_num=2):
     """This function is used to calculate the mixed unimodal and multi-modal 
     beta function. Input are the decision variable (x), time (t) and g function
     (g).
     """
+    beta = [0.0]*obj_num
     k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
-    x_odd = [1.0 + (e - g(x, t))*(e - g(x, t)) -
-            np.cos(2*np.pi*k*(e - g(x, t)))
-            for i, e in enumerate(x[1:]) if i%2 == 0]
-    x_eve = [1.0 + (e - g(x, t))*(e - g(x, t)) -
-            np.cos(2*np.pi*k*(e - g(x, t)))
-            for i, e in enumerate(x[1:]) if i%2 == 1]
-    return [(2.0/len(x_odd))*np.sum(x_odd), (2.0/len(x_eve))*np.sum(x_eve)]
+
+    for i in range(obj_num-1, len(x)):
+        temp = 1.0 + (x[i] - g(x, t))*(x[i] - g(x, t)) - np.cos(2*np.pi*k*(x[i] - g(x, t)))
+        beta[(i+1)%obj_num] += temp
+    beta = [(2.0/int(len(LOWER_BOUND)/obj_num))*b for b in beta]
+    return beta
 
 
 def alpha_conv(x):
@@ -349,7 +350,7 @@ def DB9a(x, t):
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
         alpha = alpha_conf_3obj(x, t)
-        beta = beta_mix(x, t, g)
+        beta = beta_multi(x, t, g, obj_num=3)
         return additive(alpha, beta)
     else:
         raise Exception(ERR_MSG)
@@ -360,7 +361,29 @@ def DB9m(x, t):
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
         alpha = alpha_conf_3obj(x, t)
-        beta = beta_mix(x, t, g)
+        beta = beta_multi(x, t, g, obj_num=3)
+        return multiplicative(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB10a(x, t):
+    """DB10a dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj(x, t)
+        beta = beta_mix(x, t, g, obj_num=3)
+        return additive(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB10m(x, t):
+    """DB10m dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj(x, t)
+        beta = beta_mix(x, t, g, obj_num=3)
         return multiplicative(alpha, beta)
     else:
         raise Exception(ERR_MSG)

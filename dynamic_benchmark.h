@@ -34,10 +34,35 @@ bool check_boundary(const vector<double> &x)
 
     bool output = true;
     for (size_t i = 0; i < x.size(); ++i) {
-        output = (x[i] >= LOWER_BOUND[i] && x[i] <= UPPER_BOUND[i]);
+        output = (x[i] >= LOWER_BOUND[i] && x[i] <= UPPER_BOUND[i]) && output;
     } // end for
     return output;
 } // end function check_boundary
+
+bool check_boundary_3obj(const vector<double> &x)
+{
+    assert(x.size() == LOWER_BOUND.size() + 1);
+
+    bool output = true;
+    for (size_t i = 0; i < 2; ++i)
+        output = (x[i] >= LOWER_BOUND[0] && x[i] <= UPPER_BOUND[0]) && output;
+
+    for (size_t i = 2; i < x.size(); ++i) {
+        output = (x[i] >= LOWER_BOUND[i-1] && x[i] <= UPPER_BOUND[i-1]) && output;
+    } // end for
+    return output;
+} // end function check_boundary_3obj
+
+double fix_numerical_instability(const double x, const double rtol=1e-05, 
+        const double atol=1e-08)
+{
+    if (fabs(x - sqrt(0.5)) < (atol + rtol * sqrt(0.5)))
+        return sqrt(0.5);
+
+    if (fabs(x - 0.0) < atol)
+        return 0.0;
+    return x;
+} // end function fix_numerical_instability
 
 // DEFINE COMPONENT FUNCTIONS
 /*
@@ -45,18 +70,15 @@ bool check_boundary(const vector<double> &x)
  * decision variable (x), time (t) and g function (g).
  */
 vector<double> beta_uni(const vector<double> &x, double t,
-        double (*g)(const vector<double> &, double))
+        double (*g)(const vector<double> &, double), size_t obj_num=2)
 {
-    vector<double> beta(2, 0.0);
-    for (size_t i = 1; i < x.size(); ++i) {
-        if (i % 2) {
-            beta[0] += (x[i] - g(x, t))*(x[i] - g(x, t));
-        } else {
-            beta[1] += (x[i] - g(x, t))*(x[i] - g(x, t));
-        } // end if/else
+    vector<double> beta(obj_num, 0.0);
+    for (size_t i = obj_num-1; i < x.size(); ++i) {
+        beta[(i+1)%obj_num] += (x[i] - g(x, t))*(x[i] - g(x, t));
     } // end for
-    beta[0] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[0];
-    beta[1] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[1];
+
+    for (size_t i = 0; i < beta.size(); ++i)
+        beta[i] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/obj_num))*beta[i];
     return beta;
 } // end function beta_uni
 
@@ -65,21 +87,16 @@ vector<double> beta_uni(const vector<double> &x, double t,
  * the decision variable (x), time (t) and g function (g).
  */
 vector<double> beta_multi(const vector<double> &x, double t,
-        double (*g)(const vector<double> &, double))
+        double (*g)(const vector<double> &, double), size_t obj_num=2)
 {
     double temp;
-    vector<double> beta(2, 0.0);
-    for (size_t i = 1; i < x.size(); ++i) {
-        temp = (x[i] - g(x, t))*(x[i] - g(x, t)) * 
+    vector<double> beta(obj_num, 0.0);
+    for (size_t i = obj_num-1; i < x.size(); ++i) {
+        beta[(i+1)%obj_num] +=  (x[i] - g(x, t))*(x[i] - g(x, t)) * 
             (1 + fabs(sin(4 * PI * (x[i] - g(x, t)))));
-        if (i % 2) {
-            beta[0] += temp;
-        } else {
-            beta[1] += temp;
-        } // end if/else
     } // end for
-    beta[0] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[0];
-    beta[1] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[1];
+    for (size_t i = 0; i < beta.size(); ++i)
+        beta[i] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/obj_num))*beta[i];
     return beta;
 } // end function beta_multi
 
@@ -88,22 +105,18 @@ vector<double> beta_multi(const vector<double> &x, double t,
  * function. Input are the decision variable (x), time (t) and g function (g).
  */
 vector<double> beta_mix(const vector<double> &x, double t,
-        double (*g)(const vector<double> &, double))
+        double (*g)(const vector<double> &, double), size_t obj_num=2)
 {
     int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
     double temp;
-    vector<double> beta(2, 0.0);
-    for (size_t i = 1; i < x.size(); ++i) {
+    vector<double> beta(obj_num, 0.0);
+    for (size_t i = obj_num-1; i < x.size(); ++i) {
         temp = 1 + (x[i] - g(x, t))*(x[i] - g(x, t)) -
             cos(2.0*PI*k*(x[i] - g(x, t)));
-        if (i % 2) {
-            beta[0] += temp;
-        } else {
-            beta[1] += temp;
-        } // end if/else
+        beta[(i+1)%obj_num] += temp;
     } // end for
-    beta[0] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[0];
-    beta[1] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/2.0))*beta[1];
+    for (size_t i = 0; i < beta.size(); ++i)
+        beta[i] = 2.0/static_cast<double>(floor(LOWER_BOUND.size()/obj_num))*beta[i];
     return beta;
 } // end function beta_mix
 
@@ -161,6 +174,24 @@ vector<double> alpha_conf(const vector<double> &x, double t)
 } // end function alpha_conf
 
 /*
+ * This function is used to calculate the alpha function with time-varying
+ * conflicting objective (3-objective). Input are decision variables (x) 
+ * and time (t). The calculated values are stored in f1 and f2.
+ */
+vector<double> alpha_conf_3obj(const vector<double> &x, double t)
+{
+    int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
+    vector<double> f;
+    double alpha1 = fix_numerical_instability(cos(0.5*x[0]*PI)*cos(0.5*x[1]*PI));
+    double alpha2 = fix_numerical_instability(cos(0.5*x[0]*PI)*sin(0.5*x[1]*PI));
+    double alpha3 = fix_numerical_instability(sin(0.5*x[0]*PI + 0.25*(static_cast<double>(k)/5.0)*PI));
+    f.push_back(alpha1);
+    f.push_back(alpha2);
+    f.push_back(alpha3);
+    return f;
+} // end function alpha_conf_3obj
+
+/*
  * This function is used to calculate the g function used in the paper. Input 
  * decision variable (x) and time (t).
  */
@@ -174,9 +205,10 @@ double g(const vector<double> &x, double t)
  */
 vector<double> additive(const vector<double> &alpha, const vector<double> &beta)
 {
+    assert(alpha.size() == beta.size());
     vector<double> f;
-    f.push_back(alpha[0] + beta[0]);
-    f.push_back(alpha[1] + beta[1]);
+    for (size_t i = 0; i < alpha.size(); ++i)
+        f.push_back(alpha[i] + beta[i]);
     return f;
 } // end function additive
 
@@ -186,9 +218,10 @@ vector<double> additive(const vector<double> &alpha, const vector<double> &beta)
 vector<double> multiplicative(const vector<double> &alpha, 
         const vector<double> &beta)
 {
+    assert(alpha.size() == beta.size());
     vector<double> f;
-    f.push_back(alpha[0]*(1 + beta[0]));
-    f.push_back(alpha[1]*(1 + beta[1]));
+    for (size_t i = 0; i < alpha.size(); ++i)
+        f.push_back(alpha[i]*(1 + beta[i]));
     return f;
 } // end function multiplicative
 
@@ -322,5 +355,37 @@ vector<double> DB8m(const vector<double> &x, double t)
     vector<double> beta = beta_mix(x, t, g);
     return multiplicative(alpha, beta);
 } // end function DB8m
+
+vector<double> DB9a(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> beta = beta_multi(x, t, g, 3);
+    return additive(alpha, beta);
+} // end function DB9a
+
+vector<double> DB9m(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> beta = beta_multi(x, t, g, 3);
+    return multiplicative(alpha, beta);
+} // end function DB9m
+
+vector<double> DB10a(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> beta = beta_mix(x, t, g, 3);
+    return additive(alpha, beta);
+} // end function DB10a
+
+vector<double> DB10m(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> beta = beta_mix(x, t, g, 3);
+    return multiplicative(alpha, beta);
+} // end function DB10m
 
 #endif // DYNAMIC_BENCHMARK_H

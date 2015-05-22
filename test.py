@@ -5,6 +5,7 @@ import optparse
 import dynamic_benchmark
 
 FILENAME = os.path.basename(__file__)
+THREE_OBJ_PROBLEMS = ["DB9a", "DB9m", "DB10a", "DB10m"]
 
 def file_to_list(**kwargs):
     with open(kwargs["filename"], "r") as fid:
@@ -18,10 +19,15 @@ def process(**kwargs):
     line_num  = len(content)
     benchmark_func = getattr(dynamic_benchmark, kwargs["problem"])
     fail_num = 0
+    obj_num = 3 if kwargs["problem"] in THREE_OBJ_PROBLEMS else 2
 
     for line in content:
         line = [ float(e) for e in line.split() ]
-        (t, *var, f1, f2) = line
+        if obj_num == 2:
+            (t, *var, f1, f2) = line
+        if obj_num == 3:
+            (t, *var, f1, f2, f3) = line
+
         f_vec = benchmark_func(var, t)
         if abs(f1 - f_vec[0]) > tolerance or abs(f2 - f_vec[1]) > tolerance:
             fail_num = fail_num + 1

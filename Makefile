@@ -1,6 +1,6 @@
-all: DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8
+all: DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8 DB9 DB10
 
-DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8: test test.cpp test.py
+DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8 DB9 DB10: test test.cpp test.py
 	./test $@a $@m
 	python test.py -p $@a
 	python test.py -p $@m
@@ -11,4 +11,4 @@ test: test.cpp
 clean:
 	-rm test *.dat
 
-.PHONY: clean all DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8 
+.PHONY: clean all DB1 DB2 DB3 DB4 DB5 DB6 DB7 DB8 DB9 DB10

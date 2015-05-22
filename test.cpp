@@ -60,6 +60,14 @@ int main(int argc, char* argv[])
             benchmark_func = DB8a;
         else if(problem_string.compare("DB8m") == 0)
             benchmark_func = DB8m;
+        else if(problem_string.compare("DB9a") == 0)
+            benchmark_func = DB9a;
+        else if(problem_string.compare("DB9m") == 0)
+            benchmark_func = DB9m;
+        else if(problem_string.compare("DB10a") == 0)
+            benchmark_func = DB10a;
+        else if(problem_string.compare("DB10m") == 0)
+            benchmark_func = DB10m;
         else {
             std::cerr << "[ERROR] Benchmark problem \"" << problem_string << "\" is not found." << std::endl;
             return 1;
@@ -70,6 +78,14 @@ int main(int argc, char* argv[])
         std::ofstream fid;
         fid.open(filename);
 
+        int obj_num = 2;
+        if(problem_string.compare("DB9a") == 0 || 
+                problem_string.compare("DB9m") == 0 ||
+                problem_string.compare("DB10a") == 0 ||
+                problem_string.compare("DB10m") == 0) {
+            obj_num = 3;
+        } // end if 
+
         double t, interval = 0.1;
         for(size_t k = 0; k <= 100; ++k) {
             t = interval * static_cast<double>(k);
@@ -77,6 +93,10 @@ int main(int argc, char* argv[])
             for(size_t i = 0; i < inst_num; ++i) {
                 std::vector<double> x_var;
                 x_var.push_back(distribution(generator));
+
+                if(obj_num == 3)
+                    x_var.push_back(distribution(generator));
+
                 for(size_t j = 1; j < var_num; ++j)
                     x_var.push_back(2.0*distribution(generator)-1);
 
