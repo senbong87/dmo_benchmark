@@ -5,7 +5,8 @@ import optparse
 import dynamic_benchmark
 
 FILENAME = os.path.basename(__file__)
-THREE_OBJ_PROBLEMS = ["DB9a", "DB9m", "DB10a", "DB10m"]
+THREE_OBJ_PROBLEMS = ["DB9a", "DB9m", "DB10a", "DB10m", 
+                        "DB11a", "DB11m", "DB12a", "DB12m"]
 
 def file_to_list(**kwargs):
     with open(kwargs["filename"], "r") as fid:

@@ -175,10 +175,10 @@ vector<double> alpha_conf(const vector<double> &x, double t)
 
 /*
  * This function is used to calculate the alpha function with time-varying
- * conflicting objective (3-objective). Input are decision variables (x) 
+ * conflicting objective (3-objective, type 1). Input are decision variables (x) 
  * and time (t). The calculated values are stored in f1 and f2.
  */
-vector<double> alpha_conf_3obj(const vector<double> &x, double t)
+vector<double> alpha_conf_3obj_type1(const vector<double> &x, double t)
 {
     int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
     vector<double> f;
@@ -189,7 +189,25 @@ vector<double> alpha_conf_3obj(const vector<double> &x, double t)
     f.push_back(alpha2);
     f.push_back(alpha3);
     return f;
-} // end function alpha_conf_3obj
+} // end function alpha_conf_3obj_type1
+
+/* This function is used to calculate the alpha function with time-varying
+ * conflicting objective (3-objective, type 1). Input are decision variables (x) 
+ * and time (t). The calculated values are stored in f1 and f2.
+ */
+vector<double> alpha_conf_3obj_type2(const vector<double> &x, double t)
+{
+    int k = int(fabs(5.0*fmod(floor(DELTA_STATE*int(t)/5.0), 2.0) - fmod(DELTA_STATE*int(t), 5)));
+    double k_ratio = (5.0 - k)/5.0;
+    vector<double> f;
+    double alpha1 = fix_numerical_instability(cos(0.5*x[0]*PI)*cos(0.5*x[1]*PI*k_ratio));
+    double alpha2 = fix_numerical_instability(cos(0.5*x[0]*PI)*sin(0.5*x[1]*PI*k_ratio));
+    double alpha3 = fix_numerical_instability(sin(0.5*x[0]*PI));
+    f.push_back(alpha1);
+    f.push_back(alpha2);
+    f.push_back(alpha3);
+    return f;
+} // end function alpha_conf_3obj_type2
 
 /*
  * This function is used to calculate the g function used in the paper. Input 
@@ -359,7 +377,7 @@ vector<double> DB8m(const vector<double> &x, double t)
 vector<double> DB9a(const vector<double> &x, double t)
 {
     assert(check_boundary_3obj(x));
-    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> alpha = alpha_conf_3obj_type1(x, t);
     vector<double> beta = beta_multi(x, t, g, 3);
     return additive(alpha, beta);
 } // end function DB9a
@@ -367,7 +385,7 @@ vector<double> DB9a(const vector<double> &x, double t)
 vector<double> DB9m(const vector<double> &x, double t)
 {
     assert(check_boundary_3obj(x));
-    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> alpha = alpha_conf_3obj_type1(x, t);
     vector<double> beta = beta_multi(x, t, g, 3);
     return multiplicative(alpha, beta);
 } // end function DB9m
@@ -375,7 +393,7 @@ vector<double> DB9m(const vector<double> &x, double t)
 vector<double> DB10a(const vector<double> &x, double t)
 {
     assert(check_boundary_3obj(x));
-    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> alpha = alpha_conf_3obj_type1(x, t);
     vector<double> beta = beta_mix(x, t, g, 3);
     return additive(alpha, beta);
 } // end function DB10a
@@ -383,9 +401,41 @@ vector<double> DB10a(const vector<double> &x, double t)
 vector<double> DB10m(const vector<double> &x, double t)
 {
     assert(check_boundary_3obj(x));
-    vector<double> alpha = alpha_conf_3obj(x, t);
+    vector<double> alpha = alpha_conf_3obj_type1(x, t);
     vector<double> beta = beta_mix(x, t, g, 3);
     return multiplicative(alpha, beta);
 } // end function DB10m
+
+vector<double> DB11a(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj_type2(x, t);
+    vector<double> beta = beta_multi(x, t, g, 3);
+    return additive(alpha, beta);
+} // end function DB11a
+
+vector<double> DB11m(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj_type2(x, t);
+    vector<double> beta = beta_multi(x, t, g, 3);
+    return multiplicative(alpha, beta);
+} // end function DB11m
+
+vector<double> DB12a(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj_type2(x, t);
+    vector<double> beta = beta_mix(x, t, g, 3);
+    return additive(alpha, beta);
+} // end function DB12a
+
+vector<double> DB12m(const vector<double> &x, double t)
+{
+    assert(check_boundary_3obj(x));
+    vector<double> alpha = alpha_conf_3obj_type2(x, t);
+    vector<double> beta = beta_mix(x, t, g, 3);
+    return multiplicative(alpha, beta);
+} // end function DB12m
 
 #endif // DYNAMIC_BENCHMARK_H

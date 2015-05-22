@@ -94,15 +94,28 @@ def alpha_conf(x, t):
             np.log(1 - 0.1*k)/np.log(0.1*k + np.finfo(float).eps))]
 
 
-def alpha_conf_3obj(x, t):
+def alpha_conf_3obj_type1(x, t):
     """This function is used to calculate the alpha unction with time-varying
-    conflicting objective (3-objective). Input are decision variable (x) and 
-    time (t).
+    conflicting objective (3-objective, type 1). Input are decision variable 
+    (x) and time (t).
     """
     k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
     alpha1 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.cos(0.5*x[1]*np.pi))
     alpha2 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.sin(0.5*x[1]*np.pi))
     alpha3 = fix_numerical_instability(np.sin(0.5*x[0]*np.pi + 0.25*(k/5.0)*np.pi))
+    return [alpha1, alpha2, alpha3]
+
+
+def alpha_conf_3obj_type2(x, t):
+    """This function is used to calculate the alpha unction with time-varying
+    conflicting objective (3-objective, type 2). Input are decision variable (x) 
+    and time (t).
+    """
+    k = int(abs(5.0*(int(DELTA_STATE*int(t)/5.0) % 2) - (DELTA_STATE*int(t) % 5)))
+    k_ratio = (5.0 - k)/5.0
+    alpha1 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.cos(0.5*x[1]*np.pi*k_ratio))
+    alpha2 = fix_numerical_instability(np.cos(0.5*x[0]*np.pi)*np.sin(0.5*x[1]*np.pi*k_ratio))
+    alpha3 = fix_numerical_instability(np.sin(0.5*x[0]*np.pi))
     return [alpha1, alpha2, alpha3]
 
 
@@ -349,7 +362,7 @@ def DB9a(x, t):
     """DB9a dynamic benchmark problem
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
-        alpha = alpha_conf_3obj(x, t)
+        alpha = alpha_conf_3obj_type1(x, t)
         beta = beta_multi(x, t, g, obj_num=3)
         return additive(alpha, beta)
     else:
@@ -360,7 +373,7 @@ def DB9m(x, t):
     """DB9m dynamic benchmark problem
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
-        alpha = alpha_conf_3obj(x, t)
+        alpha = alpha_conf_3obj_type1(x, t)
         beta = beta_multi(x, t, g, obj_num=3)
         return multiplicative(alpha, beta)
     else:
@@ -371,7 +384,7 @@ def DB10a(x, t):
     """DB10a dynamic benchmark problem
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
-        alpha = alpha_conf_3obj(x, t)
+        alpha = alpha_conf_3obj_type1(x, t)
         beta = beta_mix(x, t, g, obj_num=3)
         return additive(alpha, beta)
     else:
@@ -382,7 +395,51 @@ def DB10m(x, t):
     """DB10m dynamic benchmark problem
     """
     if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
-        alpha = alpha_conf_3obj(x, t)
+        alpha = alpha_conf_3obj_type1(x, t)
+        beta = beta_mix(x, t, g, obj_num=3)
+        return multiplicative(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB11a(x, t):
+    """DB11a dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj_type2(x, t)
+        beta = beta_multi(x, t, g, obj_num=3)
+        return additive(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB11m(x, t):
+    """DB11m dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj_type2(x, t)
+        beta = beta_multi(x, t, g, obj_num=3)
+        return multiplicative(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB12a(x, t):
+    """DB12a dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj_type2(x, t)
+        beta = beta_mix(x, t, g, obj_num=3)
+        return additive(alpha, beta)
+    else:
+        raise Exception(ERR_MSG)
+
+
+def DB12m(x, t):
+    """DB12m dynamic benchmark problem
+    """
+    if check_boundary_3obj(x, UPPER_BOUND, LOWER_BOUND):
+        alpha = alpha_conf_3obj_type2(x, t)
         beta = beta_mix(x, t, g, obj_num=3)
         return multiplicative(alpha, beta)
     else:

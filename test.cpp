@@ -68,6 +68,14 @@ int main(int argc, char* argv[])
             benchmark_func = DB10a;
         else if(problem_string.compare("DB10m") == 0)
             benchmark_func = DB10m;
+        else if(problem_string.compare("DB11a") == 0)
+            benchmark_func = DB11a;
+        else if(problem_string.compare("DB11m") == 0)
+            benchmark_func = DB11m;
+        else if(problem_string.compare("DB12a") == 0)
+            benchmark_func = DB12a;
+        else if(problem_string.compare("DB12m") == 0)
+            benchmark_func = DB12m;
         else {
             std::cerr << "[ERROR] Benchmark problem \"" << problem_string << "\" is not found." << std::endl;
             return 1;
@@ -79,10 +87,10 @@ int main(int argc, char* argv[])
         fid.open(filename);
 
         int obj_num = 2;
-        if(problem_string.compare("DB9a") == 0 || 
-                problem_string.compare("DB9m") == 0 ||
-                problem_string.compare("DB10a") == 0 ||
-                problem_string.compare("DB10m") == 0) {
+        if(problem_string.compare("DB9a") == 0 || problem_string.compare("DB9m") == 0 ||
+                problem_string.compare("DB10a") == 0 || problem_string.compare("DB10m") == 0 ||
+                problem_string.compare("DB11a") == 0 || problem_string.compare("DB11m") == 0 ||
+                problem_string.compare("DB12a") == 0 || problem_string.compare("DB12m") == 0) {
             obj_num = 3;
         } // end if 
 
