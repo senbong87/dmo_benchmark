@@ -89,7 +89,6 @@ vector<double> beta_uni(const vector<double> &x, double t,
 vector<double> beta_multi(const vector<double> &x, double t,
         double (*g)(const vector<double> &, double), size_t obj_num=2)
 {
-    double temp;
     vector<double> beta(obj_num, 0.0);
     for (size_t i = obj_num-1; i < x.size(); ++i) {
         beta[(i+1)%obj_num] +=  (x[i] - g(x, t))*(x[i] - g(x, t)) * 
