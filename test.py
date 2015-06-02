@@ -30,8 +30,15 @@ def process(**kwargs):
             (t, *var, f1, f2, f3) = line
 
         f_vec = benchmark_func(var, t)
-        if abs(f1 - f_vec[0]) > tolerance or abs(f2 - f_vec[1]) > tolerance:
-            fail_num = fail_num + 1
+
+        if obj_num == 2:
+            if abs(f1 - f_vec[0]) > tolerance or abs(f2 - f_vec[1]) > tolerance:
+                fail_num = fail_num + 1
+        if obj_num == 3:
+            if abs(f1 - f_vec[0]) > tolerance or abs(f2 - f_vec[1]) > tolerance or \
+                    abs(f3 - f_vec[2]) > tolerance:
+                fail_num = fail_num + 1
+
     print("Problem: {}\tPassing Rate: {}%\tTotal Check: {}".\
             format(kwargs["problem"], 100*(line_num-fail_num)/float(line_num),\
             line_num))

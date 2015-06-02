@@ -172,13 +172,15 @@ def fix_numerical_instability(x):
 def additive(alpha, beta):
     """Additive form of the benchmark problem.
     """
-    return [alpha[0] + beta[0], alpha[1] + beta[1]]
+    return [a + b for a,b in zip(alpha, beta)]
+#    return [alpha[0] + beta[0], alpha[1] + beta[1]]
 
 
 def multiplicative(alpha, beta):
     """Multiplicative form of the benchmark problem.
     """
-    return [alpha[0]*(1 + beta[0]), alpha[1]*(1 + beta[1])]
+    return [a * (1 + b) for a,b in zip(alpha, beta)]
+#    return [alpha[0]*(1 + beta[0]), alpha[1]*(1 + beta[1])]
 
 
 ## Benchmark functions ## 
